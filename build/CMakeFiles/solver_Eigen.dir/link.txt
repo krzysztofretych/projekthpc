@@ -1,0 +1,1 @@
+/usr/bin/c++  -g   CMakeFiles/solver_Eigen.dir/src/solver_Eigen.cpp.o  -o solver_Eigen  /home/krzysztof/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.3.0/benchmark-1.6.0-oviunlk6fy6d5i62o3g7tzggavvrw5ze/lib/libbenchmark.a -pthread /usr/lib/x86_64-linux-gnu/librt.so 
