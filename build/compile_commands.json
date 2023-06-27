@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/home/krzysztof/hpc/projekt/build",
+  "command": "/usr/bin/c++   -I/home/krzysztof/hpc/projekt/include -isystem /home/krzysztof/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.3.0/benchmark-1.6.0-oviunlk6fy6d5i62o3g7tzggavvrw5ze/include  -g   -std=gnu++2a -o CMakeFiles/solver_parallel_for.dir/src/solver_parallel_for.cpp.o -c /home/krzysztof/hpc/projekt/src/solver_parallel_for.cpp",
+  "file": "/home/krzysztof/hpc/projekt/src/solver_parallel_for.cpp"
+}
+]
