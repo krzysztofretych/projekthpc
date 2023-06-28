@@ -31,8 +31,10 @@ int main (void)
 
         // Initializing u
         tbb::parallel_for(tbb::blocked_range<int>(0, grid), [&](const tbb::blocked_range<int>& r) {
-            for (int i = r.begin(); i != r.end(); ++i) {
-                for (int j = 0; j <= grid; j++) {
+            for (int i = r.begin(); i != r.end(); ++i) 
+            {
+                for (int j = 0; j <= grid; j++) 
+                {
                     u[i][j] = 0.0;
                     u[i][grid] = 1.0;
                     u[i][grid-1] = 1.0;
@@ -41,7 +43,7 @@ int main (void)
         });
 
         // Initializing v
-        tbb::parallel_for(tbb::blocked_range<int>(0, grid + 1), [&](const tbb::blocked_range<int>& r) {
+        tbb::parallel_for(tbb::blocked_range<int>(0, grid), [&](const tbb::blocked_range<int>& r) {
             for (int i = r.begin(); i != r.end(); ++i) {
                 for (int j = 0; j <= grid - 1; j++) {
                     v[i][j] = 0.0;
@@ -50,7 +52,7 @@ int main (void)
         });
 
         // Initializing p
-        tbb::parallel_for(tbb::blocked_range<int>(0, grid + 1), [&](const tbb::blocked_range<int>& r) {
+        tbb::parallel_for(tbb::blocked_range<int>(0, grid), [&](const tbb::blocked_range<int>& r) {
             for (int i = r.begin(); i != r.end(); ++i) {
                 for (int j = 0; j <= grid; j++) {
                     p[i][j] = 1.0;
@@ -80,7 +82,7 @@ int main (void)
                 }
             });
 
-            tbb::parallel_for(tbb::blocked_range<int>(0, grid), [&](const tbb::blocked_range<int>& r) {
+            tbb::parallel_for(tbb::blocked_range<int>(0, grid-1), [&](const tbb::blocked_range<int>& r) {
                 for (int i = r.begin(); i != r.end(); ++i) {
                     un[i][0] = -un[i][1];
                     un[i][grid] = 2 - un[i][grid - 1];
@@ -88,7 +90,7 @@ int main (void)
             });
 
             // Solves v-momentum
-            tbb::parallel_for(tbb::blocked_range<int>(1, grid), [&](const tbb::blocked_range<int>& r) {
+            tbb::parallel_for(tbb::blocked_range<int>(1, grid-1), [&](const tbb::blocked_range<int>& r) {
                 for (int i = r.begin(); i != r.end(); ++i) {
                     for (int j = 1; j <= grid - 2; j++) {
                         vn[i][j] = v[i][j] - dt * (0.25 * ((u[i][j] + u[i][j + 1]) * (v[i][j] + v[i + 1][j]) - (u[i - 1][j] + u[i - 1][j + 1]) * (v[i][j] + v[i - 1][j])) / dx
@@ -107,7 +109,7 @@ int main (void)
                 }
             });
 
-            tbb::parallel_for(tbb::blocked_range<int>(0, grid + 1), [&](const tbb::blocked_range<int>& r) {
+            tbb::parallel_for(tbb::blocked_range<int>(0, grid), [&](const tbb::blocked_range<int>& r) {
                 for (int i = r.begin(); i != r.end(); ++i) {
                     vn[i][0] = 0.0;
                     vn[i][grid - 1] = 0.0;
@@ -115,7 +117,7 @@ int main (void)
             });
 
             // Solves continuity equation
-            tbb::parallel_for(tbb::blocked_range<int>(1, grid), [&](const tbb::blocked_range<int>& r) {
+            tbb::parallel_for(tbb::blocked_range<int>(1, grid-1), [&](const tbb::blocked_range<int>& r) {
                 for (int i = r.begin(); i != r.end(); ++i) {
                     for (int j = 1; j <= grid - 1; j++) {
                         pn[i][j] = p[i][j] - dt * delta * ((un[i][j] - un[i - 1][j]) / dx + (vn[i][j] - vn[i][j - 1]) / dy);
@@ -131,7 +133,7 @@ int main (void)
                 }
             });
 
-            tbb::parallel_for(tbb::blocked_range<int>(0, grid + 1), [&](const tbb::blocked_range<int>& r) {
+            tbb::parallel_for(tbb::blocked_range<int>(0, grid), [&](const tbb::blocked_range<int>& r) {
                 for (int j = r.begin(); j != r.end(); ++j) {
                     pn[0][j] = pn[1][j];
                     pn[grid][j] = pn[grid - 1][j];
@@ -172,7 +174,7 @@ int main (void)
             });
 
             // Iterating p
-            tbb::parallel_for(tbb::blocked_range2d<int>(0, grid + 1, 0, grid + 1), [&](const tbb::blocked_range2d<int>& r) {
+            tbb::parallel_for(tbb::blocked_range2d<int>(0, grid, 0, grid), [&](const tbb::blocked_range2d<int>& r) {
                 for (int i = r.rows().begin(); i != r.rows().end(); ++i) {
                     for (int j = r.cols().begin(); j != r.cols().end(); ++j) {
                         p[i][j] = pn[i][j];
@@ -182,6 +184,28 @@ int main (void)
 
             step++;
         }
+
+	for (i=0; i<=(grid-1); i++)
+	{
+		for (j=0; j<=(grid-1); j++)
+		{	
+			uc[i][j] = 0.5*(u[i][j]+u[i][j+1]);
+			vc[i][j] = 0.5*(v[i][j]+v[i+1][j]);
+			pc[i][j] = 0.25*(p[i][j]+p[i+1][j]+p[i][j+1]+p[i+1][j+1]);
+		}
+	}
+    /* tbb::parallel_for(tbb::blocked_range2d<int>(0, grid, 0, grid), [&](const tbb::blocked_range2d<int>& r)
+    {
+	for (int i = r.rows().begin(); i != r.rows().end()-1; ++i)
+	{
+		for (j=0; j<=(grid-1); j++)
+		{	
+			uc[i][j] = 0.5*(u[i][j]+u[i][j+1]);
+			vc[i][j] = 0.5*(v[i][j]+v[i+1][j]);
+			pc[i][j] = 0.25*(p[i][j]+p[i+1][j]+p[i][j+1]+p[i+1][j+1]);
+		}
+	}
+    }); */
     //}
  	
 	//OUTPUT DATA
@@ -230,6 +254,6 @@ else
   }
 }
 
-//BENCHMARK(BM_NavierStokes)->UseRealTime()->Ranges({{128, 2<<9}, {1, 4}});;
+//BENCHMARK(BM_NavierStokes)->UseRealTime()->Unit(benchmark::kMillisecond)->Ranges({{128, 2<<9}, {1, 4}});;
 
 //BENCHMARK_MAIN();
