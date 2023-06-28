@@ -5,12 +5,12 @@
 #include <benchmark/benchmark.h>
 #define grid 128
 
-//static void BM_NavierStokes(benchmark::State& state)
-int main (void)
+static void BM_NavierStokes(benchmark::State& state)
+//int main (void)
 {
-    //const int size = state.range(0);
-    //for (auto _ : state)
-    //{
+    const int size = state.range(0);
+    for (auto _ : state)
+    {
 	double u[grid][grid+1], un[grid][grid+1], uc[grid][grid];
 	double v[grid+1][grid], vn[grid+1][grid], vc[grid][grid];
 	double p[grid+1][grid+1], pn[grid+1][grid+1], pc[grid][grid];
@@ -142,10 +142,10 @@ int main (void)
 			}
 		}
 		
-		if (step%1000 ==1)
+		/* if (step%1000 ==1)
 		{
 	        printf("Error is %5.8lf for the step %d\n", error, step);
-		}
+		} */
 		
 		
 		// Iterating u
@@ -188,7 +188,7 @@ int main (void)
 			pc[i][j] = 0.25*(p[i][j]+p[i+1][j]+p[i][j+1]+p[i+1][j+1]);
 		}
     }
-	//}
+	}
 	
 /* 	// Get the measured time in nanoseconds
     auto measuredTime = state.iterations() * state.real_time_ns();
@@ -200,7 +200,7 @@ int main (void)
     std::cout << "Measured time: " << measuredTimeSec << " seconds" << std::endl; */
 	
 	
-	// OUTPUT DATA
+/* 	// OUTPUT DATA
 	FILE *fout2, *fout3;
 	fout2 = fopen("UVP.plt","w+t");
 	fout3 = fopen("Central_U.plt","w+t");
@@ -230,9 +230,9 @@ int main (void)
 	}
 	}
 
-	fclose( fout2 );
+	fclose( fout2 ); */
 	
-	// CENTRAL --U
+/* 	// CENTRAL --U
   fprintf(fout3, "VARIABLES=\"U\",\"Y\"\n");
   fprintf(fout3, "ZONE F=POINT\n");
   fprintf(fout3, "I=%d\n", grid );
@@ -243,7 +243,7 @@ int main (void)
     ypos = (double) j*dy;
 
     fprintf( fout3, "%5.8lf\t%5.8lf\n", (uc[grid/2][j] + uc[(grid/2)+1][j])/(2.), ypos );
-  }
+  } */
 
 
    // state.counters["DPFlops"] = benchmark::Counter{static_cast<double>(state.iterations() * size),
@@ -251,6 +251,6 @@ int main (void)
                                //benchmark::Counter::kIs1000};
 }
 
-//BENCHMARK(BM_NavierStokes)->UseRealTime()->Ranges({{128, 2<<9}, {1, 4}});
+BENCHMARK(BM_NavierStokes)->UseRealTime()->Unit(benchmark::kMillisecond)->Ranges({{128, 2<<9}, {1, 4}});
 
-//BENCHMARK_MAIN();
+BENCHMARK_MAIN();
