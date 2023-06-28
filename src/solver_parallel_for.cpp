@@ -196,7 +196,7 @@ int main (void)
 	}
     /* tbb::parallel_for(tbb::blocked_range2d<int>(0, grid, 0, grid), [&](const tbb::blocked_range2d<int>& r)
     {
-	for (int i = r.rows().begin(); i != r.rows().end()-1; ++i)
+	for (int i = r.rows().begin(); i != r.rows().end(); ++i)
 	{
 		for (j=0; j<=(grid-1); j++)
 		{	
