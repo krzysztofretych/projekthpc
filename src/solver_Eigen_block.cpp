@@ -4,9 +4,11 @@
 
 #include <benchmark/benchmark.h>
 
-#define grid 128
+//#define grid 128
+const static int grid = 128;
 
 static void BM_NavierStokes(benchmark::State & state) {
+  
   const int size = state.range(0);
   for (auto _: state) {
     Eigen::MatrixXd u(grid, grid + 1), un(grid, grid + 1), uc(grid, grid);
@@ -37,7 +39,7 @@ static void BM_NavierStokes(benchmark::State & state) {
     while (error > 0.00001) {
       // Solve u-momentum equation
       un.block(1, 1, grid - 2, grid - 1) =
-        u.block(1, 1, grid - 2, grid - 1) -
+        u.block(1, 1, grid - 2, grid - 1).array() -
         dt * ((u.block(2, 1, grid - 2, grid - 1).array() * u.block(2, 1, grid - 2, grid - 1).array() -
             u.block(0, 1, grid - 2, grid - 1).array() * u.block(0, 1, grid - 2, grid - 1).array()) *
           0.5 * 1.0 / dx +
@@ -59,11 +61,11 @@ static void BM_NavierStokes(benchmark::State & state) {
       un.row(0).setZero();
       un.row(grid - 1).setZero();
       un.col(0) = -un.col(1);
-      un.col(grid) = 2.0 - un.col(grid - 1);
+      un.col(grid).array() = - un.col(grid - 1).array() + 2.0;
 
       // Solve v-momentum
       vn.block(1, 1, grid - 1, grid - 2) =
-        v.block(1, 1, grid - 1, grid - 2) -
+        v.block(1, 1, grid - 1, grid - 2).array() -
         dt * (0.25 * ((u.block(1, 1, grid - 1, grid - 2).array() + u.block(1, 2, grid - 1, grid - 2).array()) *
             (v.block(1, 1, grid - 1, grid - 2).array() + v.block(2, 1, grid - 1, grid - 2).array()) -
             (u.block(0, 1, grid - 1, grid - 2).array() + u.block(0, 2, grid - 1, grid - 2).array()) *
@@ -89,9 +91,9 @@ static void BM_NavierStokes(benchmark::State & state) {
 
       // Solves continuity equation
       pn.block(1, 1, grid - 1, grid - 1) =
-        p.block(1, 1, grid - 1, grid - 1) -
-        dt * delta * ((un.block(1, 1, grid - 1, grid - 1).array() - un.block(0, 1, grid - 2, grid - 1).array()) * 1.0 / dx +
-          (vn.block(1, 1, grid - 1, grid - 1).array() - vn.block(1, 0, grid - 1, grid - 2).array()) / dy);
+        p.block(1, 1, grid - 1, grid - 1).array() -
+        dt * delta * ((un.block(1, 1, grid - 1, grid - 1).array() - un.block(0, 1, grid - 1, grid - 1).array()) * 1.0 / dx +
+          (vn.block(1, 1, grid - 1, grid - 1).array() - vn.block(1, 0, grid - 1, grid - 1).array()) / dy);
 
       // Boundary conditions
       pn.block(1, 0, grid - 1, 1) = pn.block(1, 1, grid - 1, 1);
@@ -101,6 +103,11 @@ static void BM_NavierStokes(benchmark::State & state) {
 
       // Displaying error
       error = (pn.block(1, 1, grid - 1, grid - 1) - p.block(1, 1, grid - 1, grid - 1)).array().abs().sum();
+
+      if (step%1000 ==1)
+		{
+	        printf("Error is %5.8lf for the step %d\n", error, step);
+		}
 
       // Iterating u
       u.block(0, 0, grid, grid + 1) = un.block(0, 0, grid, grid + 1);
@@ -124,15 +131,6 @@ static void BM_NavierStokes(benchmark::State & state) {
   }
 }
 
-BENCHMARK(BM_NavierStokes) -> UseRealTime() -> Unit(benchmark::kMillisecond) -> Ranges({
-  {
-    128,
-    2 << 9
-  },
-  {
-    1,
-    4
-  }
-});
+BENCHMARK(BM_NavierStokes) -> UseRealTime() -> Unit(benchmark::kMillisecond) -> Ranges({{128, 2 << 9},{1, 4}});
 
 BENCHMARK_MAIN();
